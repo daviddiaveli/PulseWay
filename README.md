@@ -1,6 +1,6 @@
 # PulseWay 🚀: Technical Engineering Specification
 
-*🌍 Read this in other languages: [Čeština](README.cs.md).*
+*🌍 Read this in other languages: [Čeština](README.cz.md).*
 
 **PulseWay** is a production-grade, modular simulation framework engineered for **Autonomous X-ray Pulsar Navigation (XNAV)**. This project serves as a high-fidelity testbed for calculating spacecraft state vectors in deep space by triangulating arrival times of high-energy electromagnetic pulses from millisecond pulsars.
 
