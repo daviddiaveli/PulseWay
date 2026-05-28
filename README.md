@@ -41,6 +41,7 @@ PSR J0437-4715   | Bin 01   | 0.0750           | 0.0802
 -----------------------------------------------------------------
 [SUCCESS] Navigation brain extracted valid space-timing geometry.
 
+```
 ---
 
 ## 🛠️ Getting Started
@@ -56,6 +57,9 @@ Clone the repository and execute the master script:
 git clone [https://github.com/daviddiaveli/PulseWay.git](https://github.com/daviddiaveli/PulseWay.git)
 cd PulseWay
 python main.py
+```
+
+---
 
 ## 💡 Future Roadmap
 
