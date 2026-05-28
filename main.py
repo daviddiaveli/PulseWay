@@ -25,8 +25,8 @@ if __name__ == "__main__":
     sim_duration = 5.0  # Kratší úseky pro rychlejší běh smyčky
     num_bins = 100
     
-    # Provedeme 5 po sobě jdoucích měření
-    for step in range(1, 6):
+    # Provedeme 51 po sobě jdoucích měření
+    for step in range(1, 51):
         print(f"\n--- [TIME STEP {step}/5] Collecting photons for {sim_duration}s ---")
         
         # 1. Nasbíráme vesmírný šum
@@ -57,8 +57,8 @@ if __name__ == "__main__":
         filtered_position = kf.update(raw_position)
         filtered_error = sum((e - r)**2 for e, r in zip(filtered_position, explorer.position))**0.5
         
-        print(f"Surová odchylka měření:  {raw_error:,.2f} km")
-        print(f"KALMANOVA ODCHYLKA:      {filtered_error:,.2f} km")
+        print(f"Raw Measurement Error:   {raw_error:,.2f} km")
+        print(f"KALMAN FILTER ERROR:     {filtered_error:,.2f} km")
 
     print("\n" + "=" * 80)
     print(f"[SUCCESS] Navigation lock acquired! Final estimation error: {filtered_error:,.2f} km")
