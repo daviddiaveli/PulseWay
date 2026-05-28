@@ -41,7 +41,7 @@ PulseWay uses a strictly decoupled, 9-module architecture. This allows for unit-
 * **`visualizer.py` (Interactive 3D Rendering):** Interfaces with `matplotlib` in 3D projection mode. It renders the raw measurement scatter, the Kalman-filtered path, and the True Spacecraft Position, providing visual proof of trajectory convergence.
 * **`relativity.py` (General & Special Relativity Engine):** Implements two critical spacetime corrections:
     1.  **Special Relativity (Time Dilation):** Corrects for high orbital velocity $v$ via the Lorentz transformation.
-    2.  **General Relativity (Shapiro Delay):** Corrects for gravitational curvature of light paths passing near the Sun's mass using the formula: $dt = (2GM / c^3) \ln(\text{impact\_parameter})$.
+    2.  **General Relativity (Shapiro Delay):** Corrects for gravitational curvature of light paths passing near the Sun's mass using the formula: $dt = (2GM / c^3) \ln(\text{impact}_{\text{parameter}})$.
 * **`test_relativity.py` (Verification Suite):** A robust `unittest` environment that validates every physics function against known edge cases, ensuring that no code regression corrupts physical calculations.
 
 ---
