@@ -38,42 +38,57 @@ if __name__ == "__main__":
         navigation_measurements = []
         
         for name, data in PULSAR_CATALOG.items():
-            pulsar_photons = [event["time"] for event in master_stream if event["source"] == name]
+            # SIMULACE KATASTROFY: 15% šance, že solární erupce vymaže data z tohoto pulsaru
+            import random
+            if random.random() < 0.15:
+                pulsar_photons = []  # Senzor oslepl, nic nevidí
+            else:
+                pulsar_photons = [event["time"] for event in master_stream if event["source"] == name]
+            
             profile_bins = SignalProcessor.epoch_folding(pulsar_photons, data["period"], num_bins=num_bins)
-            measured_phase = NavigationSystem.extract_measured_phase(profile_bins)
             
-            # Základní geometrické zpoždění (Rømer delay)
-            true_dt = explorer.calculate_romer_delay(data["direction"])
-            
-            # EINSTEIN: Vypočítáme mikroskopické opravy času
-            shapiro = Relativity.shapiro_delay(explorer.position, data["direction"])
-            dilation = Relativity.time_dilation(explorer.velocity, data["period"])
-            
-            if step == 1:
-                shapiro_micro = shapiro * 1_000_000
-                print(f"[{name}] Relativity shift: Shapiro = {shapiro_micro:.4f} μs")
-            
-            # Upravíme teoretický čas o relativitu
-            true_dt = true_dt + shapiro + dilation
-            
-            measured_distance = (measured_phase * data["period"]) * SPEED_OF_LIGHT
-            full_cycles = int(true_dt / data["period"])
-            total_distance = (full_cycles * data["period"] * SPEED_OF_LIGHT) + measured_distance
-            
-            navigation_measurements.append({"dir": data["direction"], "dist": total_distance})
-            
-        raw_position = PositionEstimator.solve_3d_position(navigation_measurements)
-        raw_error = sum((e - r)**2 for e, r in zip(raw_position, explorer.position))**0.5
+            # ZÁCHRANNÁ SÍŤ (TRY - EXCEPT)
+            try:
+                measured_phase = NavigationSystem.extract_measured_phase(profile_bins)
+                
+                # Výpočet relativity a vzdálenosti proběhne, jen když máme fázi
+                true_dt = explorer.calculate_romer_delay(data["direction"])
+                shapiro = Relativity.shapiro_delay(explorer.position, data["direction"])
+                dilation = Relativity.time_dilation(explorer.velocity, data["period"])
+                true_dt = true_dt + shapiro + dilation
+                
+                measured_distance = (measured_phase * data["period"]) * SPEED_OF_LIGHT
+                full_cycles = int(true_dt / data["period"])
+                total_distance = (full_cycles * data["period"] * SPEED_OF_LIGHT) + measured_distance
+                
+                navigation_measurements.append({"dir": data["direction"], "dist": total_distance})
+                
+            except ValueError as e:
+                # Místo pádu celého programu loď jen nahlásí problém
+                print(f"[WARNING] {name} tracking lost! Reason: {e}")
         
-        filtered_position = kf.update(raw_position)
-        filtered_error = sum((e - r)**2 for e, r in zip(filtered_position, explorer.position))**0.5
+        # OCHRANA TRIGONOMETRIE: Máme dost dat pro výpočet 3D pozice?
+        if len(navigation_measurements) == 3:
+            raw_position = PositionEstimator.solve_3d_position(navigation_measurements)
+            raw_error = sum((e - r)**2 for e, r in zip(raw_position, explorer.position))**0.5
+            
+            filtered_position = kf.update(raw_position)
+            filtered_error = sum((e - r)**2 for e, r in zip(filtered_position, explorer.position))**0.5
+            
+            print(f"Raw Measurement Error:   {raw_error:,.2f} km")
+            print(f"KALMAN FILTER ERROR:     {filtered_error:,.2f} km")
+        else:
+            # Nemáme 3 pulsary, letíme naslepo (Inertial mode)
+            print("[CRITICAL] Insufficient telemetry! Flying blind (Inertial mode).")
+            # Kalmanův filtr se neaktualizuje, loď jen použije svou poslední známou pozici
+            filtered_position = kf.position
+            filtered_error = sum((e - r)**2 for e, r in zip(filtered_position, explorer.position))**0.5
+            print(f"KALMAN FILTER ERROR:     {filtered_error:,.2f} km (No update)")
         
-        # NOVINKA: Uložení do historie pro vizualizaci
-        raw_history.append(raw_position)
+        # Uložení do historie pro vizualizaci
+        # Pokud letíme naslepo, raw_position se nepočítá, uložíme místo toho None
+        raw_history.append(raw_position if len(navigation_measurements) == 3 else [0,0,0])
         kalman_history.append(filtered_position.copy())
-        
-        print(f"Raw Measurement Error:   {raw_error:,.2f} km")
-        print(f"KALMAN FILTER ERROR:     {filtered_error:,.2f} km")
 
     print("\n" + "=" * 80)
     print(f"[SUCCESS] Navigation lock acquired! Final estimation error: {filtered_error:,.2f} km")

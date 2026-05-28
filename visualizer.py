@@ -15,10 +15,10 @@ class NavigationVisualizer:
         ky = [p[1] for p in kalman_history]
         kz = [p[2] for p in kalman_history]
 
-        # Rozbalení souřadnic pro surová měření
-        rx = [p[0] for p in raw_history]
-        ry = [p[1] for p in raw_history]
-        rz = [p[2] for p in raw_history]
+        # Rozbalení souřadnic pro surová měření (přeskočíme ty, které spadly na [0,0,0])
+        rx = [p[0] for p in raw_history if p != [0,0,0]]
+        ry = [p[1] for p in raw_history if p != [0,0,0]]
+        rz = [p[2] for p in raw_history if p != [0,0,0]]
 
         # Vykreslení surových dat (šum) jako červené tečky
         ax.scatter(rx, ry, rz, color='red', s=10, label='Raw Measurements (Noise)', alpha=0.3)
